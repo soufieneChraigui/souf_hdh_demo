@@ -1,0 +1,8 @@
+image:
+  repository: harbor.apps.dso.numerique-interieur.com/form-demoform18/java-demo
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "master"
+
+ingress:
+  host: demo18.apps.dso-formation.hp.numerique-interieur.com
