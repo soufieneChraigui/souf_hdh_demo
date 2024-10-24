@@ -1,48 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "hdh_app1-helm.fullname" . }}
-  labels:
-    {{- include "hdh_app1-helm.labels" . | nindent 4 }}
-    app: hdh_app1
+  name: {{ .Chart.Name }}-deployment
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "hdh_app1-helm.selectorLabels" . | nindent 6 }}
-      app: hdh_app1
+      app: {{ .Chart.Name }}
   template:
     metadata:
       labels:
-        {{- include "hdh_app1-helm.selectorLabels" . | nindent 8 }}
-        app: hdh_app1
+        app: {{ .Chart.Name }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
-            - name: PG_SERVICE
-              value: {{ .Values.postgresql.fullnameOverride }}
-            - name: PG_DATABASE
-              value: {{ .Values.global.postgresql.auth.database }}
-            - name: PG_USER
-              value: {{ .Values.global.postgresql.auth.username }}
-            - name: PG_PASSWORD
-              value: {{ .Values.global.postgresql.auth.password }}
-            - name: SPRING_DATASOURCE_USERNAME
-              value: $(PG_USER)
-            - name: SPRING_DATASOURCE_PASSWORD
-              value: $(PG_PASSWORD)
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://$(PG_SERVICE):5432/$(PG_DATABASE)
-          ports:
-            - name: http
-              containerPort: 8080
-              protocol: TCP
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}

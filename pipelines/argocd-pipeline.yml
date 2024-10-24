@@ -1,0 +1,20 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: InstallArgoCD
+    displayName: 'Install ArgoCD'
+    jobs:
+      - job: ArgoCD
+        steps:
+          - checkout: self
+          - script: |
+              cd infra/gitops
+              terraform init
+              terraform apply -auto-approve
+            displayName: 'Install ArgoCD using Terraform'

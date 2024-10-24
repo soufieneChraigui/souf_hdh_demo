@@ -1,0 +1,45 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: ProvisionAKS
+    displayName: 'Provision AKS Cluster'
+    jobs:
+      - job: TerraformApply
+        steps:
+          - checkout: self
+          - script: |
+              cd infra/k8s
+              terraform init
+              terraform apply -auto-approve
+            displayName: 'Provision AKS with Terraform'
+
+  - stage: InstallArgoCD
+    displayName: 'Install ArgoCD on AKS'
+    dependsOn: ProvisionAKS
+    jobs:
+      - job: ArgoCD
+        steps:
+          - checkout: self
+          - script: |
+              cd infra/gitops
+              terraform init
+              terraform apply -auto-approve
+            displayName: 'Install ArgoCD with Terraform'
+
+  - stage: DeployApps
+    displayName: 'Deploy Applications using Helm'
+    dependsOn: InstallArgoCD
+    jobs:
+      - job: HelmDeploy
+        steps:
+          - checkout: self
+          - script: |
+              helm upgrade --install app1 ./apps/hdh_app1 --namespace app1-namespace
+              helm upgrade --install app2 ./apps/hdh_app2 --namespace app2-namespace
+            displayName: 'Deploy Applications via Helm'
